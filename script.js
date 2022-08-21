@@ -7,7 +7,7 @@ canvas.height = 800;
 const BLOCK_W = canvas.width / 10;
 const BLOCK_H = canvas.height / 20;
 
-const FPS = 30;
+const FPS = 5;
 
 // window.addEventListener("resize", (e) => {
 //   canvas.width = window.innerWidth;
@@ -237,7 +237,7 @@ function draw() {
         ctx.beginPath();
         ctx.strokeStyle = "grey";
         ctx.lineWidth = 4;
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "blue";
         ctx.rect(object.x, object.y, Tetris_Game.width, Tetris_Game.height);
         ctx.fill();
         ctx.stroke();
@@ -252,7 +252,7 @@ function No_Crash() {
     takenShapes.forEach((shape) => {
       shape.forEach((taken_block) => {
         currentShape.forEach((block) => {
-          if (taken_block.y === block.y + BLOCK_H) {
+          if (taken_block.y === block.y + BLOCK_H && taken_block.x === block.x ) {
             boolArray.push(false);
           } else {
             boolArray.push(true);
