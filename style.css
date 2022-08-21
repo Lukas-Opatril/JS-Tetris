@@ -6,10 +6,17 @@
 body {
   width: 100vw;
   height: 100vh;
+  background-color: black;
 }
 
 #canvas1 {
   background-color: black;
   position: absolute;
-  top: 0;
+  border: 2px solid antiquewhite;
+}
+
+.container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
