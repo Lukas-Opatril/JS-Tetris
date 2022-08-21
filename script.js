@@ -7,7 +7,7 @@ canvas.height = 800;
 const BLOCK_W = canvas.width / 10;
 const BLOCK_H = canvas.height / 20;
 
-const FPS = 5;
+const FPS = 1;
 
 // window.addEventListener("resize", (e) => {
 //   canvas.width = window.innerWidth;
@@ -46,28 +46,28 @@ class Tetris {
     ];
     this.iShape = [
       [
-        { x: 0, y: 0 },
-        { x: this.width, y: 0 },
+        { x: 0, y: this.width * 2 },
+        { x: this.width, y: this.width * 2 },
+        { x: this.width * 2, y: this.width * 2 },
+        { x: this.width * 3, y: this.width * 2 },
+      ],
+      [
         { x: this.width * 2, y: 0 },
-        { x: this.width * 3, y: 0 },
+        { x: this.width * 2, y: this.height },
+        { x: this.width * 2, y: this.height * 2 },
+        { x: this.width * 2, y: this.height * 3 },
       ],
       [
-        { x: 0, y: 0 },
-        { x: 0, y: this.height },
-        { x: 0, y: this.height * 2 },
-        { x: 0, y: this.height * 3 },
+        { x: 0, y: this.width * 2 },
+        { x: this.width, y: this.width * 2 },
+        { x: this.width * 2, y: this.width * 2 },
+        { x: this.width * 3, y: this.width * 2 },
       ],
       [
-        { x: 0, y: 0 },
-        { x: this.width, y: 0 },
         { x: this.width * 2, y: 0 },
-        { x: this.width * 3, y: 0 },
-      ],
-      [
-        { x: 0, y: 0 },
-        { x: 0, y: this.height },
-        { x: 0, y: this.height * 2 },
-        { x: 0, y: this.height * 3 },
+        { x: this.width * 2, y: this.height },
+        { x: this.width * 2, y: this.height * 2 },
+        { x: this.width * 2, y: this.height * 3 },
       ],
     ];
     this.tShape = [
@@ -215,13 +215,21 @@ let key = "";
 let Tetris_Game = new Tetris();
 let random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
 let currentRotation = 0;
+let XMove_counter = 0;
+let YMove_counter = 0;
 
 let currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
 let currentShape = JSON.parse(JSON.stringify(currentChoice));
+// currentShape.forEach(object => {
+//   object.x+=BLOCK_W*4
+
+// })
 let takenShapes = [];
 
 function draw() {
+  // console.clear()
   currentShape.forEach((object) => {
+    //console.log(object.x + " " + object.y);
     ctx.beginPath();
     ctx.strokeStyle = "yellow";
     ctx.lineWidth = 4;
@@ -252,7 +260,10 @@ function No_Crash() {
     takenShapes.forEach((shape) => {
       shape.forEach((taken_block) => {
         currentShape.forEach((block) => {
-          if (taken_block.y === block.y + BLOCK_H && taken_block.x === block.x ) {
+          if (
+            taken_block.y === block.y + BLOCK_H &&
+            taken_block.x === block.x
+          ) {
             boolArray.push(false);
           } else {
             boolArray.push(true);
@@ -270,11 +281,75 @@ function No_Crash() {
   }
 }
 
+function No_Crash_Left() {
+  if (takenShapes.length > 0) {
+    let boolArray = [];
+    takenShapes.forEach((shape) => {
+      shape.forEach((taken_block) => {
+        currentShape.forEach((block) => {
+          if (
+            taken_block.y === block.y &&
+            taken_block.x === block.x - BLOCK_W
+          ) {
+            boolArray.push(false);
+          } else {
+            boolArray.push(true);
+          }
+        });
+      });
+    });
+    if (boolArray.includes(false)) {
+      return false;
+    } else if (!boolArray.includes(false)) {
+      return true;
+    }
+  } else {
+    return true;
+  }
+}
+function No_Crash_Right() {
+  if (takenShapes.length > 0) {
+    let boolArray = [];
+    takenShapes.forEach((shape) => {
+      shape.forEach((taken_block) => {
+        currentShape.forEach((block) => {
+          if (
+            taken_block.y === block.y &&
+            taken_block.x === block.x + BLOCK_W
+          ) {
+            boolArray.push(false);
+          } else {
+            boolArray.push(true);
+          }
+        });
+      });
+    });
+    if (boolArray.includes(false)) {
+      return false;
+    } else if (!boolArray.includes(false)) {
+      return true;
+    }
+  } else {
+    return true;
+  }
+}
+
+function takeShape() {
+  takenShapes.push(currentShape);
+  currentRotation = 0;
+  XMove_counter = 0;
+  YMove_counter = 0;
+  random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
+  currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
+  currentShape = JSON.parse(JSON.stringify(currentChoice));
+}
+
 function DownFall() {
   if (
     !currentShape.some((object) => object.y + BLOCK_H === canvas.height) &&
     No_Crash()
   ) {
+    YMove_counter += BLOCK_H;
     currentShape.forEach((object) => {
       object.y += BLOCK_H;
     });
@@ -282,17 +357,14 @@ function DownFall() {
     currentShape.some((object) => object.y + BLOCK_H === canvas.height) ||
     !No_Crash()
   ) {
-    takenShapes.push(currentShape);
-
-    random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
-    currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
-    currentShape = JSON.parse(JSON.stringify(currentChoice));
+    takeShape();
   }
 }
 
 function GameLoop() {
   ctx.beginPath();
   ctx.clearRect(0, 0, 400, 800);
+  console.log(XMove_counter + " " + YMove_counter);
   draw();
   DownFall();
 }
@@ -305,22 +377,41 @@ window.addEventListener("keydown", (e) => {
   ctx.clearRect(0, 0, 400, 800);
   if (key === "ArrowRight" || key === "d") {
     if (!currentShape.some((object) => object.x + BLOCK_W >= canvas.width)) {
-      currentShape.forEach((object) => {
-        object.x += BLOCK_W;
-      });
+      if (No_Crash_Right()) {
+        XMove_counter += BLOCK_W;
+        currentShape.forEach((object) => {
+          object.x += BLOCK_W;
+        });
+      } else {
+        takeShape();
+      }
     }
   } else if (key === "ArrowLeft" || key === "a") {
     if (!currentShape.some((object) => object.x - BLOCK_W < 0)) {
-      currentShape.forEach((object) => {
-        object.x -= BLOCK_W;
-      });
+      if (No_Crash_Left()) {
+        XMove_counter -= BLOCK_W;
+        currentShape.forEach((object) => {
+          object.x -= BLOCK_W;
+        });
+      } else {
+        takeShape();
+      }
     }
   } else if (key === "ArrowDown" || key === "s") {
-    if (!currentShape.some((object) => object.y + BLOCK_H === canvas.height)) {
-      currentShape.forEach((object) => {
-        object.y += BLOCK_H;
-      });
+    DownFall();
+  } else if (key === "ArrowUp" || key === "z") {
+    currentRotation++;
+
+    if (currentRotation === 4) {
+      currentRotation = 0;
     }
+
+    currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
+    currentShape = JSON.parse(JSON.stringify(currentChoice));
+    currentShape.forEach((object) => {
+      object.x += XMove_counter;
+      object.y += YMove_counter;
+    });
   }
   draw();
 });
