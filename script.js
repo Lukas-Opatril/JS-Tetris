@@ -254,7 +254,7 @@ function draw() {
   }
 }
 
-function No_Crash() {
+function No_Crash_Down() {
   if (takenShapes.length > 0) {
     let boolArray = [];
     takenShapes.forEach((shape) => {
@@ -262,6 +262,32 @@ function No_Crash() {
         currentShape.forEach((block) => {
           if (
             taken_block.y === block.y + BLOCK_H &&
+            taken_block.x === block.x
+          ) {
+            boolArray.push(false);
+          } else {
+            boolArray.push(true);
+          }
+        });
+      });
+    });
+    if (boolArray.includes(false)) {
+      return false;
+    } else if (!boolArray.includes(false)) {
+      return true;
+    }
+  } else {
+    return true;
+  }
+}
+function No_Crash_Up() {
+  if (takenShapes.length > 0) {
+    let boolArray = [];
+    takenShapes.forEach((shape) => {
+      shape.forEach((taken_block) => {
+        currentShape.forEach((block) => {
+          if (
+            taken_block.y === block.y - BLOCK_H &&
             taken_block.x === block.x
           ) {
             boolArray.push(false);
@@ -334,6 +360,39 @@ function No_Crash_Right() {
   }
 }
 
+function Next_rotation_no_glitch(rotation) {
+  if (rotation === 4) {
+    rotation = 0;
+  }
+  let currentChoice = Tetris_Game.AllShapes[random_shape][rotation];
+  let currentShape = JSON.parse(JSON.stringify(currentChoice));
+  let bool = undefined;
+  let boolArray = [];
+  if (takenShapes.length > 0) {
+    takenShapes.forEach((shape) => {
+      shape.forEach((taken_block) => {
+        currentShape.forEach((object) => {
+          if (taken_block.x === object.x && taken_block.y === object.y) {
+            boolArray.push(false);
+          } else {
+            boolArray.push(true);
+          }
+        });
+      });
+    });
+  } else {
+    bool = true;
+    return bool;
+  }
+  if (boolArray.some((bool) => bool === false)) {
+    bool = false;
+  } else {
+    bool = true;
+  }
+
+  return bool;
+}
+
 function takeShape() {
   takenShapes.push(currentShape);
   currentRotation = 0;
@@ -347,7 +406,7 @@ function takeShape() {
 function DownFall() {
   if (
     !currentShape.some((object) => object.y + BLOCK_H === canvas.height) &&
-    No_Crash()
+    No_Crash_Down()
   ) {
     YMove_counter += BLOCK_H;
     currentShape.forEach((object) => {
@@ -355,7 +414,7 @@ function DownFall() {
     });
   } else if (
     currentShape.some((object) => object.y + BLOCK_H === canvas.height) ||
-    !No_Crash()
+    !No_Crash_Down()
   ) {
     takeShape();
   }
@@ -364,14 +423,41 @@ function DownFall() {
 function GameLoop() {
   ctx.beginPath();
   ctx.clearRect(0, 0, 400, 800);
-  console.log(XMove_counter + " " + YMove_counter);
   draw();
   DownFall();
 }
 
 let interval = setInterval(GameLoop, 1000 / FPS);
 
-window.addEventListener("keydown", (e) => {
+function RotationCorrect() {
+  currentShape.forEach((object) => {
+    object.x += XMove_counter;
+    object.y += YMove_counter;
+  });
+
+  if (currentShape.some((object) => object.x >= canvas.width)) {
+    while (currentShape.some((object) => object.x >= canvas.width)) {
+      currentShape.forEach((object) => {
+        object.x -= BLOCK_W;
+      });
+    }
+  } else if (currentShape.some((object) => object.x < 0)) {
+    while (currentShape.some((object) => object.x < 0)) {
+      currentShape.forEach((object) => {
+        object.x += BLOCK_W;
+      });
+    }
+  }
+  if (currentShape.some((object) => object.y >= canvas.height)) {
+    while (currentShape.some((object) => object.y >= canvas.height)) {
+      currentShape.forEach((object) => {
+        object.y -= BLOCK_H;
+      });
+    }
+  }
+}
+
+window.addEventListener("keyup", (e) => {
   key = e.key;
   ctx.beginPath();
   ctx.clearRect(0, 0, 400, 800);
@@ -400,38 +486,15 @@ window.addEventListener("keydown", (e) => {
   } else if (key === "ArrowDown" || key === "s") {
     DownFall();
   } else if (key === "ArrowUp" || key === "z") {
-    currentRotation++;
-
-    if (currentRotation === 4) {
-      currentRotation = 0;
-    }
-
-    currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
-    currentShape = JSON.parse(JSON.stringify(currentChoice));
-
-    currentShape.forEach((object) => {
-      object.x += XMove_counter;
-      object.y += YMove_counter;
-    });
-    if (currentShape.some((object) => object.x >= canvas.width)) {
-      while (currentShape.some((object) => object.x >= canvas.width)) {
-        currentShape.forEach((object) => {
-          object.x -= BLOCK_W;
-        });
+    if (Next_rotation_no_glitch(currentRotation + 1)) {
+      currentRotation++;
+      console.log(Next_rotation_no_glitch(currentRotation));
+      if (currentRotation === 4) {
+        currentRotation = 0;
       }
-    } else if (currentShape.some((object) => object.x < 0)) {
-      while (currentShape.some((object) => object.x < 0)) {
-        currentShape.forEach((object) => {
-          object.x += BLOCK_W;
-        });
-      }
-    }
-    if (currentShape.some((object) => object.y >= canvas.height)) {
-      while (currentShape.some((object) => object.y >= canvas.height)) {
-        currentShape.forEach((object) => {
-          object.y -= BLOCK_H;
-        });
-      }
+      currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
+      currentShape = JSON.parse(JSON.stringify(currentChoice));
+      RotationCorrect();
     }
   }
   draw();
