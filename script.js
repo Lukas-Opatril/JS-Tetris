@@ -46,28 +46,28 @@ class Tetris {
     ];
     this.iShape = [
       [
-        { x: 0, y: this.width * 2 },
-        { x: this.width, y: this.width * 2 },
-        { x: this.width * 2, y: this.width * 2 },
-        { x: this.width * 3, y: this.width * 2 },
-      ],
-      [
+        { x: 0, y: 0 },
+        { x: this.width, y: 0 },
         { x: this.width * 2, y: 0 },
-        { x: this.width * 2, y: this.height },
-        { x: this.width * 2, y: this.height * 2 },
-        { x: this.width * 2, y: this.height * 3 },
+        { x: this.width * 3, y: 0 },
       ],
       [
-        { x: 0, y: this.width * 2 },
-        { x: this.width, y: this.width * 2 },
-        { x: this.width * 2, y: this.width * 2 },
-        { x: this.width * 3, y: this.width * 2 },
+        { x: 0, y: 0 },
+        { x: 0, y: this.height },
+        { x: 0, y: this.height * 2 },
+        { x: 0, y: this.height * 3 },
       ],
       [
+        { x: 0, y: 0 },
+        { x: this.width, y: 0 },
         { x: this.width * 2, y: 0 },
-        { x: this.width * 2, y: this.height },
-        { x: this.width * 2, y: this.height * 2 },
-        { x: this.width * 2, y: this.height * 3 },
+        { x: this.width * 3, y: 0 },
+      ],
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: this.height },
+        { x: 0, y: this.height * 2 },
+        { x: 0, y: this.height * 3 },
       ],
     ];
     this.tShape = [
@@ -408,10 +408,31 @@ window.addEventListener("keydown", (e) => {
 
     currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
     currentShape = JSON.parse(JSON.stringify(currentChoice));
+
     currentShape.forEach((object) => {
       object.x += XMove_counter;
       object.y += YMove_counter;
     });
+    if (currentShape.some((object) => object.x >= canvas.width)) {
+      while (currentShape.some((object) => object.x >= canvas.width)) {
+        currentShape.forEach((object) => {
+          object.x -= BLOCK_W;
+        });
+      }
+    } else if (currentShape.some((object) => object.x < 0)) {
+      while (currentShape.some((object) => object.x < 0)) {
+        currentShape.forEach((object) => {
+          object.x += BLOCK_W;
+        });
+      }
+    }
+    if (currentShape.some((object) => object.y >= canvas.height)) {
+      while (currentShape.some((object) => object.y >= canvas.height)) {
+        currentShape.forEach((object) => {
+          object.y -= BLOCK_H;
+        });
+      }
+    }
   }
   draw();
 });
