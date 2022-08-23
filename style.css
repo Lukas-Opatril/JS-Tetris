@@ -6,17 +6,36 @@
 body {
   width: 100vw;
   height: 100vh;
+
   background-color: black;
+  overflow: hidden;
 }
 
 #canvas1 {
   background-color: black;
-  position: absolute;
   border: 2px solid antiquewhite;
 }
 
 .container {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
   justify-content: center;
+}
+
+.scoreboard {
+  width: fit-content;
+  height: fit-content;
+  border:1px dotted wheat;
+  color: whitesmoke;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+h1,
+span {
+  font-size: 5vmin;
+  letter-spacing: 5px;
 }

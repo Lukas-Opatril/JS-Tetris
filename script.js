@@ -43,6 +43,7 @@ class Tetris {
         { x: this.width * 2, y: this.height },
         { x: this.width * 2, y: 0 },
       ],
+      "#FF971C",
     ];
     this.iShape = [
       [
@@ -69,6 +70,7 @@ class Tetris {
         { x: 0, y: this.height * 2 },
         { x: 0, y: this.height * 3 },
       ],
+      "cyan",
     ];
     this.tShape = [
       [
@@ -95,6 +97,7 @@ class Tetris {
         { x: this.width, y: 0 },
         { x: this.width, y: this.height * 2 },
       ],
+      "purple",
     ];
     this.sShape = [
       [
@@ -121,6 +124,7 @@ class Tetris {
         { x: this.width, y: this.height },
         { x: this.width, y: this.height * 2 },
       ],
+      "#72CB3B",
     ];
     this.zShape = [
       [
@@ -147,6 +151,7 @@ class Tetris {
         { x: this.width, y: this.height },
         { x: this.width, y: 0 },
       ],
+      "#FF3213",
     ];
     this.jShape = [
       [
@@ -173,6 +178,7 @@ class Tetris {
         { x: this.width * 2, y: 0 },
         { x: this.width * 2, y: this.height },
       ],
+      "#0341AE",
     ];
     this.oShape = [
       [
@@ -199,6 +205,7 @@ class Tetris {
         { x: 0, y: this.height },
         { x: this.width, y: this.height },
       ],
+      "#FFD500",
     ];
     this.AllShapes = [
       this.lShape,
@@ -212,12 +219,13 @@ class Tetris {
   }
 }
 let key = "";
+let score = document.getElementById("score")
 let Tetris_Game = new Tetris();
 let random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
 let currentRotation = 0;
 let XMove_counter = 0;
 let YMove_counter = 0;
-
+let currentLetter = Tetris_Game.AllShapes[random_shape];
 let currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
 let currentShape = JSON.parse(JSON.stringify(currentChoice));
 // currentShape.forEach(object => {
@@ -231,9 +239,9 @@ function draw() {
   currentShape.forEach((object) => {
     //console.log(object.x + " " + object.y);
     ctx.beginPath();
-    ctx.strokeStyle = "yellow";
-    ctx.lineWidth = 4;
-    ctx.fillStyle = "blue";
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = currentLetter[4];
     ctx.rect(object.x, object.y, Tetris_Game.width, Tetris_Game.height);
     ctx.fill();
     ctx.stroke();
@@ -244,8 +252,8 @@ function draw() {
       shape.forEach((object) => {
         ctx.beginPath();
         ctx.strokeStyle = "grey";
-        ctx.lineWidth = 4;
-        ctx.fillStyle = "blue";
+        ctx.lineWidth = 2;
+        ctx.fillStyle = object.color;
         ctx.rect(object.x, object.y, Tetris_Game.width, Tetris_Game.height);
         ctx.fill();
         ctx.stroke();
@@ -374,7 +382,7 @@ function Next_rotation_no_glitch(rotation) {
         currentShape.forEach((object) => {
           if (taken_block.x === object.x && taken_block.y === object.y) {
             boolArray.push(false);
-          } else {
+          } else if (taken_block.x !== object.x && taken_block.y !== object.y) {
             boolArray.push(true);
           }
         });
@@ -384,9 +392,9 @@ function Next_rotation_no_glitch(rotation) {
     bool = true;
     return bool;
   }
-  if (boolArray.some((bool) => bool === false)) {
+  if (boolArray.some((value) => value === false)) {
     bool = false;
-  } else {
+  } else if (boolArray.every((value) => value === true)) {
     bool = true;
   }
 
@@ -394,11 +402,16 @@ function Next_rotation_no_glitch(rotation) {
 }
 
 function takeShape() {
+  for (let i = 0; i < currentShape.length; i++) {
+    console.log((currentShape[i].color = currentLetter[4]));
+  }
+
   takenShapes.push(currentShape);
   currentRotation = 0;
   XMove_counter = 0;
   YMove_counter = 0;
   random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
+  currentLetter = Tetris_Game.AllShapes[random_shape];
   currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
   currentShape = JSON.parse(JSON.stringify(currentChoice));
 }
@@ -488,7 +501,6 @@ window.addEventListener("keyup", (e) => {
   } else if (key === "ArrowUp" || key === "z") {
     if (Next_rotation_no_glitch(currentRotation + 1)) {
       currentRotation++;
-      console.log(Next_rotation_no_glitch(currentRotation));
       if (currentRotation === 4) {
         currentRotation = 0;
       }
