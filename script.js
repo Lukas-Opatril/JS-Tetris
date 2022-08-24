@@ -221,6 +221,7 @@ class Tetris {
 let key = "";
 let score = document.getElementById("score");
 let points = 0;
+let completedLines = 0;
 let Tetris_Game = new Tetris();
 let random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
 let currentRotation = 0;
@@ -304,6 +305,7 @@ function RowControl() {
     if (rowCompleted > 0) {
       points += rowCompleted * 10;
       score.innerText = points;
+      completedLines += rowCompleted;
     }
   }
 }
@@ -414,6 +416,20 @@ function No_Crash_Right() {
   }
 }
 
+function Game_Over_Check() {
+  takenShapes.forEach((shape) => {
+    shape.forEach((taken_block) => {
+      currentShape.forEach((block) => {
+        if (taken_block.y === block.y && taken_block.y === 0) {
+          alert(
+            "GAME OVER!\n Total number of completed lines : " + completedLines
+          );
+        }
+      });
+    });
+  });
+}
+
 function Next_rotation_no_glitch(angle) {
   let rotation = angle;
   if (rotation === 4) {
@@ -495,6 +511,7 @@ function GameLoop() {
   ctx.beginPath();
   ctx.clearRect(0, 0, 400, 800);
   draw();
+  Game_Over_Check();
   DownFall();
 }
 
