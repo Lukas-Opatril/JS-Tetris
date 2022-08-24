@@ -219,7 +219,8 @@ class Tetris {
   }
 }
 let key = "";
-let score = document.getElementById("score")
+let score = document.getElementById("score");
+let points = 0;
 let Tetris_Game = new Tetris();
 let random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
 let currentRotation = 0;
@@ -228,20 +229,17 @@ let YMove_counter = 0;
 let currentLetter = Tetris_Game.AllShapes[random_shape];
 let currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
 let currentShape = JSON.parse(JSON.stringify(currentChoice));
-// currentShape.forEach(object => {
-//   object.x+=BLOCK_W*4
-
-// })
+for (let i = 0; i < currentShape.length; i++) {
+  currentShape[i].color = currentLetter[4];
+}
 let takenShapes = [];
 
 function draw() {
-  // console.clear()
-  currentShape.forEach((object) => {
-    //console.log(object.x + " " + object.y);
+  currentShape.forEach((object, index) => {
     ctx.beginPath();
     ctx.strokeStyle = "grey";
     ctx.lineWidth = 2;
-    ctx.fillStyle = currentLetter[4];
+    ctx.fillStyle = object.color;
     ctx.rect(object.x, object.y, Tetris_Game.width, Tetris_Game.height);
     ctx.fill();
     ctx.stroke();
@@ -259,6 +257,54 @@ function draw() {
         ctx.stroke();
       });
     });
+  }
+  RowControl();
+}
+
+function RowControl() {
+  if (takenShapes.length > 0) {
+    let rowCompleted = 0;
+    for (let i = BLOCK_H; i <= canvas.height - BLOCK_H; i += BLOCK_H) {
+      let counter = 0;
+
+      takenShapes.forEach((shape) => {
+        shape.forEach((taken_block) => {
+          if (taken_block.y === i) {
+            counter++;
+          }
+        });
+      });
+      if (counter === 10) {
+        rowCompleted++;
+        //console.log("Row compelted on index: " + i);
+        takenShapes.forEach((shape) => {
+          for (let j = 0; j < shape.length; j++) {
+            if (shape[j].y === i) {
+              shape.splice(j, 1);
+              j = 0;
+            }
+          }
+          for (let j = 0; j < shape.length; j++) {
+            if (shape[j].y === i) {
+              shape.splice(j, 1);
+              j = 0;
+            }
+          }
+        });
+
+        takenShapes.forEach((shape) => {
+          shape.forEach((taken_block) => {
+            if (taken_block.y < i) {
+              taken_block.y += BLOCK_H;
+            }
+          });
+        });
+      }
+    }
+    if (rowCompleted > 0) {
+      points += rowCompleted * 10;
+      score.innerText = points;
+    }
   }
 }
 
@@ -402,18 +448,18 @@ function Next_rotation_no_glitch(rotation) {
 }
 
 function takeShape() {
-  for (let i = 0; i < currentShape.length; i++) {
-    console.log((currentShape[i].color = currentLetter[4]));
-  }
-
   takenShapes.push(currentShape);
   currentRotation = 0;
   XMove_counter = 0;
   YMove_counter = 0;
   random_shape = Math.floor(Math.random() * Tetris_Game.AllShapes.length);
+
   currentLetter = Tetris_Game.AllShapes[random_shape];
   currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
   currentShape = JSON.parse(JSON.stringify(currentChoice));
+  for (let i = 0; i < currentShape.length; i++) {
+    currentShape[i].color = currentLetter[4];
+  }
 }
 
 function DownFall() {
@@ -431,6 +477,7 @@ function DownFall() {
   ) {
     takeShape();
   }
+  RowControl();
 }
 
 function GameLoop() {
@@ -506,6 +553,9 @@ window.addEventListener("keyup", (e) => {
       }
       currentChoice = Tetris_Game.AllShapes[random_shape][currentRotation];
       currentShape = JSON.parse(JSON.stringify(currentChoice));
+      for (let i = 0; i < currentShape.length; i++) {
+        currentShape[i].color = currentLetter[4];
+      }
       RotationCorrect();
     }
   }
