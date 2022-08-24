@@ -414,19 +414,27 @@ function No_Crash_Right() {
   }
 }
 
-function Next_rotation_no_glitch(rotation) {
+function Next_rotation_no_glitch(angle) {
+  let rotation = angle;
   if (rotation === 4) {
     rotation = 0;
   }
-  let currentChoice = Tetris_Game.AllShapes[random_shape][rotation];
-  let currentShape = JSON.parse(JSON.stringify(currentChoice));
+  let rotatedChoice = Tetris_Game.AllShapes[random_shape][rotation];
+  let rotatedShape = JSON.parse(JSON.stringify(rotatedChoice));
+
+  rotatedShape.forEach((object) => {
+    object.x += XMove_counter;
+    object.y += YMove_counter;
+  });
+
   let bool = undefined;
   let boolArray = [];
   if (takenShapes.length > 0) {
     takenShapes.forEach((shape) => {
       shape.forEach((taken_block) => {
-        currentShape.forEach((object) => {
+        rotatedShape.forEach((object) => {
           if (taken_block.x === object.x && taken_block.y === object.y) {
+            console.log("Collison!");
             boolArray.push(false);
           } else if (taken_block.x !== object.x && taken_block.y !== object.y) {
             boolArray.push(true);
@@ -436,15 +444,18 @@ function Next_rotation_no_glitch(rotation) {
     });
   } else {
     bool = true;
+    console.log(bool);
     return bool;
   }
   if (boolArray.some((value) => value === false)) {
     bool = false;
+    console.log(bool);
+    return bool;
   } else if (boolArray.every((value) => value === true)) {
     bool = true;
+    console.log(bool);
+    return bool;
   }
-
-  return bool;
 }
 
 function takeShape() {
