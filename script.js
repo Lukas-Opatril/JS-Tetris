@@ -306,6 +306,7 @@ function RowControl() {
       points += rowCompleted * 10;
       score.innerText = points;
       completedLines += rowCompleted;
+      GameLoop()
     }
   }
 }
