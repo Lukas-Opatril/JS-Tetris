@@ -239,7 +239,7 @@ function draw() {
   currentShape.forEach((object, index) => {
     ctx.beginPath();
     ctx.strokeStyle = "grey";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.fillStyle = object.color;
     ctx.rect(object.x, object.y, Tetris_Game.width, Tetris_Game.height);
     ctx.fill();
@@ -251,7 +251,7 @@ function draw() {
       shape.forEach((object) => {
         ctx.beginPath();
         ctx.strokeStyle = "grey";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.fillStyle = object.color;
         ctx.rect(object.x, object.y, Tetris_Game.width, Tetris_Game.height);
         ctx.fill();
@@ -498,6 +498,7 @@ function DownFall() {
     currentShape.forEach((object) => {
       object.y += BLOCK_H;
     });
+    ShowLanding();
   } else if (
     currentShape.some((object) => object.y + BLOCK_H === canvas.height) ||
     !No_Crash_Down()
@@ -505,13 +506,66 @@ function DownFall() {
     takeShape();
   }
   RowControl();
+  ctx.globalAlpha = "1";
+}
+
+function ShowLanding() {
+  ctx.globalAlpha = "0.3";
+  if (takenShapes.length > 0) {
+    let currentShape_Copy = JSON.parse(JSON.stringify(currentShape));
+
+    while (Can_Drop(currentShape_Copy)) {
+      currentShape_Copy.forEach((object) => {
+        object.y += BLOCK_H;
+      });
+    }
+    currentShape_Copy.forEach((coordinates) => {
+      ctx.beginPath();
+      ctx.strokeStyle = coordinates.color;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = coordinates.color;
+      ctx.rect(
+        coordinates.x,
+        coordinates.y,
+        Tetris_Game.width,
+        Tetris_Game.height
+      );
+      ctx.fill();
+      ctx.stroke();
+    });
+  } else {
+    let currentShape_Copy = JSON.parse(JSON.stringify(currentShape));
+
+    while (Can_Drop_No_Taken(currentShape_Copy)) {
+      currentShape_Copy.forEach((object) => {
+        object.y += BLOCK_H;
+      });
+    }
+    currentShape_Copy.forEach((coordinates) => {
+      ctx.beginPath();
+      ctx.strokeStyle = coordinates.color;
+      ctx.lineWidth = 2;
+      ctx.fillStyle = coordinates.color;
+      ctx.rect(
+        coordinates.x,
+        coordinates.y,
+        Tetris_Game.width,
+        Tetris_Game.height
+      );
+      ctx.fill();
+      ctx.stroke();
+    });
+  }
 }
 
 function GameLoop() {
   ctx.beginPath();
   ctx.clearRect(0, 0, 400, 800);
+  ShowLanding();
+  ctx.globalAlpha = "1";
   draw();
   Game_Over_Check();
+
   DownFall();
 }
 
@@ -544,6 +598,67 @@ function RotationCorrect() {
     }
   }
 }
+function Can_Drop(currentShape) {
+  let boolArray = [];
+  currentShape.forEach((object) => {
+    takenShapes.forEach((shapes) => {
+      shapes.forEach((taken_block) => {
+        if (
+          (taken_block.y === object.y + BLOCK_H &&
+            taken_block.x === object.x) ||
+          object.y === canvas.height - BLOCK_H
+        ) {
+          boolArray.push(false);
+        } else if (
+          (taken_block.y !== object.y + BLOCK_H &&
+            taken_block.x !== object.x) ||
+          object.y !== canvas.height - BLOCK_H
+        ) {
+          boolArray.push(true);
+        }
+      });
+    });
+  });
+  if (boolArray.some((value) => value === false)) {
+    return false;
+  } else if (boolArray.every((value) => value === true)) {
+    return true;
+  }
+}
+function Can_Drop_No_Taken(currentShape) {
+  let boolArray = [];
+  currentShape.forEach((object) => {
+    if (object.y === canvas.height - BLOCK_H) {
+      boolArray.push(false);
+    } else {
+      boolArray.push(true);
+    }
+  });
+
+  if (boolArray.some((value) => value === false)) {
+    return false;
+  } else if (boolArray.every((value) => value === true)) {
+    return true;
+  }
+}
+
+function InstantDrop() {
+  if (takenShapes.length > 0) {
+    while (Can_Drop(currentShape)) {
+      currentShape.forEach((coordinates) => {
+        coordinates.y += BLOCK_H;
+      });
+    }
+  } else {
+    while (
+      !currentShape.some((object) => object.y === canvas.height - BLOCK_H)
+    ) {
+      currentShape.forEach((coordinates) => {
+        coordinates.y += BLOCK_H;
+      });
+    }
+  }
+}
 
 window.addEventListener("keyup", (e) => {
   key = e.key;
@@ -560,6 +675,8 @@ window.addEventListener("keyup", (e) => {
         takeShape();
       }
     }
+    ShowLanding();
+    ctx.globalAlpha = "1";
   } else if (key === "ArrowLeft" || key === "a") {
     if (!currentShape.some((object) => object.x - BLOCK_W < 0)) {
       if (No_Crash_Left()) {
@@ -571,6 +688,8 @@ window.addEventListener("keyup", (e) => {
         takeShape();
       }
     }
+    ShowLanding();
+    ctx.globalAlpha = "1";
   } else if (key === "ArrowDown" || key === "s") {
     DownFall();
   } else if (key === "ArrowUp" || key === "z") {
@@ -585,7 +704,12 @@ window.addEventListener("keyup", (e) => {
         currentShape[i].color = currentLetter[4];
       }
       RotationCorrect();
+      ShowLanding();
+      ctx.globalAlpha = "1";
     }
+  } else if (key === " ") {
+    InstantDrop();
+    GameLoop();
   }
   draw();
 });
